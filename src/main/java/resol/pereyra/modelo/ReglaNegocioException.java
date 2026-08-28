@@ -1,0 +1,8 @@
+package resol.pereyra.modelo;
+
+public class ReglaNegocioException extends Exception {
+
+    public ReglaNegocioException(String mensaje) {
+        super(mensaje);
+    }
+}
