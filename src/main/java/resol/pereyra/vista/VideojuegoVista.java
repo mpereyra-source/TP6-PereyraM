@@ -1,5 +1,6 @@
 package resol.pereyra.vista;
 
+import resol.pereyra.dto.VideojuegoDto;
 import java.util.Scanner;
 
 public class VideojuegoVista {
@@ -68,4 +69,14 @@ public class VideojuegoVista {
     public void mostrarMensaje(String mensaje) {
         System.out.println(mensaje);
     }
+    public void mostrarVideojuego(VideojuegoDto videojuego) {
+
+    System.out.println(
+            "ID: " + videojuego.getId()
+            + " | Nombre: " + videojuego.getNombre()
+            + " | Precio: $" + videojuego.getPrecio()
+            + " | Necesita reposicion: "
+            + videojuego.isNecesitaReposicion()
+    );
+}
 }

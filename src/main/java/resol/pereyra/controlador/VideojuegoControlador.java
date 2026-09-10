@@ -1,18 +1,22 @@
 package resol.pereyra.controlador;
 
+import java.sql.SQLException;
+import java.util.List;
+import resol.pereyra.dto.VideojuegoDto;
 import resol.pereyra.modelo.ReglaNegocioException;
 import resol.pereyra.modelo.Videojuego;
-import resol.pereyra.modelo.VideojuegoDAO;
+import resol.pereyra.modelo.VideojuegoDao;
+import resol.pereyra.modelo.VideojuegoDaoImpl;
 import resol.pereyra.modelo.VideojuegoNoEncontradoException;
 import resol.pereyra.vista.VideojuegoVista;
 
 public class VideojuegoControlador {
 
-    private VideojuegoDAO videojuegoDAO;
-    private VideojuegoVista vista;
+    private final VideojuegoDao videojuegoDao;
+    private final VideojuegoVista vista;
 
     public VideojuegoControlador() {
-        videojuegoDAO = new VideojuegoDAO();
+        videojuegoDao = new VideojuegoDaoImpl();
         vista = new VideojuegoVista();
     }
 
@@ -27,7 +31,7 @@ public class VideojuegoControlador {
             switch (opcion) {
 
                 case 1:
-                    videojuegoDAO.listarVideojuegos();
+                    listarVideojuegos();
                     break;
 
                 case 2:
@@ -47,32 +51,80 @@ public class VideojuegoControlador {
                     break;
 
                 case 6:
-                    videojuegoDAO.listarVideojuegosConReposicion();
+                    listarQueNecesitanReposicion();
                     break;
 
                 case 7:
-                    videojuegoDAO.listarVideojuegosDisponibles();
+                    listarDisponibles();
                     break;
 
                 case 0:
-                    vista.mostrarMensaje("Volviendo al menu principal...");
+                    vista.mostrarMensaje(
+                            "Volviendo al menu principal..."
+                    );
                     break;
 
                 default:
-                    vista.mostrarMensaje("Opcion invalida.");
+                    vista.mostrarMensaje(
+                            "Opcion invalida."
+                    );
             }
 
         } while (opcion != 0);
     }
+
+    private void listarVideojuegos() {
+
+    try {
+
+        List<Videojuego> videojuegos =
+                videojuegoDao.listarVideojuegos();
+
+        for (Videojuego videojuego : videojuegos) {
+
+            VideojuegoDto dto =
+                    convertirADto(videojuego);
+
+            vista.mostrarVideojuego(dto);
+        }
+
+    } catch (SQLException e) {
+
+        vista.mostrarMensaje(
+                "Error al listar videojuegos: "
+                + e.getMessage()
+        );
+    }
+}
 
     private void buscarPorId() {
 
         int id = vista.pedirId();
 
         try {
-            videojuegoDAO.buscarPorId(id);
+
+            Videojuego videojuego =
+                    videojuegoDao.obtenerPorId(id);
+
+            vista.mostrarMensaje(
+                    "ID: " + videojuego.getId()
+                    + " | Nombre: " + videojuego.getNombre()
+                    + " | Genero: " + videojuego.getGenero()
+                    + " | Precio: $" + videojuego.getPrecio()
+            );
+
+        } catch (SQLException e) {
+
+            vista.mostrarMensaje(
+                    "Error de base de datos: "
+                    + e.getMessage()
+            );
+
         } catch (VideojuegoNoEncontradoException e) {
-            vista.mostrarMensaje("Error: " + e.getMessage());
+
+            vista.mostrarMensaje(
+                    "Error: " + e.getMessage()
+            );
         }
     }
 
@@ -96,25 +148,39 @@ public class VideojuegoControlador {
         );
 
         try {
-            videojuegoDAO.insertarVideojuego(videojuego);
+
+            videojuegoDao.agregarVideojuego(videojuego);
+
+            vista.mostrarMensaje(
+                    "Videojuego agregado correctamente."
+            );
+
+        } catch (SQLException e) {
+
+            vista.mostrarMensaje(
+                    "Error de base de datos: "
+                    + e.getMessage()
+            );
+
         } catch (ReglaNegocioException e) {
-            vista.mostrarMensaje("Error: " + e.getMessage());
+
+            vista.mostrarMensaje(
+                    "Error: " + e.getMessage()
+            );
         }
     }
 
     private void actualizarVideojuego() {
 
-    int id = vista.pedirId();
-    String nombre = vista.pedirNombre();
-    String genero = vista.pedirGenero();
-    double precio = vista.pedirPrecio();
-    int unidades = vista.pedirUnidadesDisponibles();
-    int nivelReposicion = vista.pedirNivelReposicion();
-    int suspendido = vista.pedirSuspendido();
+        int id = vista.pedirId();
+        String nombre = vista.pedirNombre();
+        String genero = vista.pedirGenero();
+        double precio = vista.pedirPrecio();
+        int unidades = vista.pedirUnidadesDisponibles();
+        int nivelReposicion = vista.pedirNivelReposicion();
+        int suspendido = vista.pedirSuspendido();
 
-    try {
-
-        videojuegoDAO.actualizarVideojuego(
+        Videojuego videojuego = new Videojuego(
                 id,
                 nombre,
                 genero,
@@ -124,23 +190,132 @@ public class VideojuegoControlador {
                 suspendido
         );
 
-    } catch (VideojuegoNoEncontradoException
-            | ReglaNegocioException e) {
+        try {
 
-        vista.mostrarMensaje(
-                "Error: " + e.getMessage()
-        );
+            boolean actualizado =
+                    videojuegoDao.actualizarVideojuego(
+                            videojuego
+                    );
+
+            if (actualizado) {
+                vista.mostrarMensaje(
+                        "Videojuego actualizado correctamente."
+                );
+            } else {
+                vista.mostrarMensaje(
+                        "No se encontro el videojuego."
+                );
+            }
+
+        } catch (SQLException e) {
+
+            vista.mostrarMensaje(
+                    "Error de base de datos: "
+                    + e.getMessage()
+            );
+        }
     }
-}
 
     private void eliminarVideojuego() {
 
         int id = vista.pedirId();
 
         try {
-            videojuegoDAO.eliminarVideojuego(id);
-        } catch (VideojuegoNoEncontradoException e) {
-            vista.mostrarMensaje("Error: " + e.getMessage());
+
+            boolean eliminado =
+                    videojuegoDao.eliminarVideojuego(id);
+
+            if (eliminado) {
+                vista.mostrarMensaje(
+                        "Videojuego eliminado correctamente."
+                );
+            } else {
+                vista.mostrarMensaje(
+                        "No se encontro el videojuego."
+                );
+            }
+
+        } catch (SQLException e) {
+
+            vista.mostrarMensaje(
+                    "Error de base de datos: "
+                    + e.getMessage()
+            );
         }
     }
+
+    private void listarQueNecesitanReposicion() {
+
+        try {
+
+            List<Videojuego> videojuegos =
+                    videojuegoDao
+                            .listarQueNecesitanReposicion();
+
+            if (videojuegos.isEmpty()) {
+                vista.mostrarMensaje(
+                        "No hay videojuegos que necesiten reposicion."
+                );
+                return;
+            }
+
+            for (Videojuego videojuego : videojuegos) {
+
+                vista.mostrarMensaje(
+                        "ID: " + videojuego.getId()
+                        + " | Nombre: "
+                        + videojuego.getNombre()
+                        + " | Stock: "
+                        + videojuego.getUnidadesDisponibles()
+                        + " | Nivel reposicion: "
+                        + videojuego.getNivelReposicion()
+                );
+            }
+
+        } catch (SQLException e) {
+
+            vista.mostrarMensaje(
+                    "Error de base de datos: "
+                    + e.getMessage()
+            );
+        }
+    }
+
+    private void listarDisponibles() {
+
+        try {
+
+            List<Videojuego> videojuegos =
+                    videojuegoDao.listarDisponibles();
+
+            for (Videojuego videojuego : videojuegos) {
+
+                vista.mostrarMensaje(
+                        "ID: " + videojuego.getId()
+                        + " | Nombre: "
+                        + videojuego.getNombre()
+                        + " | Precio: $"
+                        + videojuego.getPrecio()
+                        + " | Stock: "
+                        + videojuego.getUnidadesDisponibles()
+                );
+            }
+
+        } catch (SQLException e) {
+
+            vista.mostrarMensaje(
+                    "Error de base de datos: "
+                    + e.getMessage()
+            );
+        }
+    }
+    private VideojuegoDto convertirADto(Videojuego videojuego) {
+
+    return new VideojuegoDto(
+            videojuego.getId(),
+            videojuego.getNombre(),
+            videojuego.getPrecio(),
+            videojuego.necesitaReposicion()
+    );
+}
 }
