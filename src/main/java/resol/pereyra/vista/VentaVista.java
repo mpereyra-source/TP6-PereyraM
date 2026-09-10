@@ -3,6 +3,8 @@ package resol.pereyra.vista;
 import java.time.LocalDate;
 import java.util.Scanner;
 
+import resol.pereyra.dto.VentaDto;
+
 public class VentaVista {
 
     private Scanner scanner;
@@ -27,12 +29,20 @@ public class VentaVista {
     }
 
     public int pedirVideojuegoId() {
-        System.out.print("Ingrese el ID del videojuego: ");
+
+        System.out.print(
+                "Ingrese el ID del videojuego: "
+        );
+
         return scanner.nextInt();
     }
 
     public int pedirCantidad() {
-        System.out.print("Ingrese la cantidad: ");
+
+        System.out.print(
+                "Ingrese la cantidad: "
+        );
+
         return scanner.nextInt();
     }
 
@@ -47,24 +57,66 @@ public class VentaVista {
         System.out.print("Ingrese el dia: ");
         int dia = scanner.nextInt();
 
-        return LocalDate.of(anio, mes, dia);
+        return LocalDate.of(
+                anio,
+                mes,
+                dia
+        );
     }
 
     public int pedirAnio() {
-        System.out.print("Ingrese el anio: ");
+
+        System.out.print(
+                "Ingrese el anio: "
+        );
+
         return scanner.nextInt();
     }
 
     public int pedirMes() {
-        System.out.print("Ingrese el mes: ");
+
+        System.out.print(
+                "Ingrese el mes: "
+        );
+
         return scanner.nextInt();
     }
 
-    public void mostrarMensaje(String mensaje) {
+    public int pedirVentaId() {
+
+        System.out.print(
+                "Ingrese el ID de la venta: "
+        );
+
+        return scanner.nextInt();
+    }
+
+    public void mostrarVenta(
+            VentaDto venta
+    ) {
+
+        System.out.println(
+                "ID: " + venta.getId()
+                + " | Fecha: " + venta.getFecha()
+                + " | Videojuego: "
+                + venta.getNombreVideojuego()
+                + " | Cantidad: "
+                + venta.getCantidad()
+                + " | Descuento: "
+                + venta.getPorcentajeDescuento()
+                + "%"
+                + " | Total: $"
+                + String.format(
+                        "%.2f",
+                        venta.getTotal()
+                )
+        );
+    }
+
+    public void mostrarMensaje(
+            String mensaje
+    ) {
+
         System.out.println(mensaje);
     }
-    public int pedirVentaId() {
-    System.out.print("Ingrese el ID de la venta: ");
-    return scanner.nextInt();
-}
 }
