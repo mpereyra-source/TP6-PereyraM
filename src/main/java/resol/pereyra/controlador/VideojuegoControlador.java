@@ -2,6 +2,7 @@ package resol.pereyra.controlador;
 
 import java.sql.SQLException;
 import java.util.List;
+
 import resol.pereyra.dto.VideojuegoDto;
 import resol.pereyra.modelo.ReglaNegocioException;
 import resol.pereyra.modelo.Videojuego;
@@ -75,27 +76,34 @@ public class VideojuegoControlador {
 
     private void listarVideojuegos() {
 
-    try {
+        try {
 
-        List<Videojuego> videojuegos =
-                videojuegoDao.listarVideojuegos();
+            List<Videojuego> videojuegos =
+                    videojuegoDao.listarVideojuegos();
 
-        for (Videojuego videojuego : videojuegos) {
+            if (videojuegos.isEmpty()) {
+                vista.mostrarMensaje(
+                        "No hay videojuegos registrados."
+                );
+                return;
+            }
 
-            VideojuegoDto dto =
-                    convertirADto(videojuego);
+            for (Videojuego videojuego : videojuegos) {
 
-            vista.mostrarVideojuego(dto);
+                VideojuegoDto dto =
+                        convertirADto(videojuego);
+
+                vista.mostrarVideojuego(dto);
+            }
+
+        } catch (SQLException e) {
+
+            vista.mostrarMensaje(
+                    "Error al listar videojuegos: "
+                    + e.getMessage()
+            );
         }
-
-    } catch (SQLException e) {
-
-        vista.mostrarMensaje(
-                "Error al listar videojuegos: "
-                + e.getMessage()
-        );
     }
-}
 
     private void buscarPorId() {
 
@@ -106,12 +114,10 @@ public class VideojuegoControlador {
             Videojuego videojuego =
                     videojuegoDao.obtenerPorId(id);
 
-            vista.mostrarMensaje(
-                    "ID: " + videojuego.getId()
-                    + " | Nombre: " + videojuego.getNombre()
-                    + " | Genero: " + videojuego.getGenero()
-                    + " | Precio: $" + videojuego.getPrecio()
-            );
+            VideojuegoDto dto =
+                    convertirADto(videojuego);
+
+            vista.mostrarVideojuego(dto);
 
         } catch (SQLException e) {
 
@@ -198,10 +204,13 @@ public class VideojuegoControlador {
                     );
 
             if (actualizado) {
+
                 vista.mostrarMensaje(
                         "Videojuego actualizado correctamente."
                 );
+
             } else {
+
                 vista.mostrarMensaje(
                         "No se encontro el videojuego."
                 );
@@ -226,10 +235,13 @@ public class VideojuegoControlador {
                     videojuegoDao.eliminarVideojuego(id);
 
             if (eliminado) {
+
                 vista.mostrarMensaje(
                         "Videojuego eliminado correctamente."
                 );
+
             } else {
+
                 vista.mostrarMensaje(
                         "No se encontro el videojuego."
                 );
@@ -253,23 +265,20 @@ public class VideojuegoControlador {
                             .listarQueNecesitanReposicion();
 
             if (videojuegos.isEmpty()) {
+
                 vista.mostrarMensaje(
                         "No hay videojuegos que necesiten reposicion."
                 );
+
                 return;
             }
 
             for (Videojuego videojuego : videojuegos) {
 
-                vista.mostrarMensaje(
-                        "ID: " + videojuego.getId()
-                        + " | Nombre: "
-                        + videojuego.getNombre()
-                        + " | Stock: "
-                        + videojuego.getUnidadesDisponibles()
-                        + " | Nivel reposicion: "
-                        + videojuego.getNivelReposicion()
-                );
+                VideojuegoDto dto =
+                        convertirADto(videojuego);
+
+                vista.mostrarVideojuego(dto);
             }
 
         } catch (SQLException e) {
@@ -288,17 +297,21 @@ public class VideojuegoControlador {
             List<Videojuego> videojuegos =
                     videojuegoDao.listarDisponibles();
 
-            for (Videojuego videojuego : videojuegos) {
+            if (videojuegos.isEmpty()) {
 
                 vista.mostrarMensaje(
-                        "ID: " + videojuego.getId()
-                        + " | Nombre: "
-                        + videojuego.getNombre()
-                        + " | Precio: $"
-                        + videojuego.getPrecio()
-                        + " | Stock: "
-                        + videojuego.getUnidadesDisponibles()
+                        "No hay videojuegos disponibles."
                 );
+
+                return;
+            }
+
+            for (Videojuego videojuego : videojuegos) {
+
+                VideojuegoDto dto =
+                        convertirADto(videojuego);
+
+                vista.mostrarVideojuego(dto);
             }
 
         } catch (SQLException e) {
@@ -309,13 +322,16 @@ public class VideojuegoControlador {
             );
         }
     }
-    private VideojuegoDto convertirADto(Videojuego videojuego) {
 
-    return new VideojuegoDto(
-            videojuego.getId(),
-            videojuego.getNombre(),
-            videojuego.getPrecio(),
-            videojuego.necesitaReposicion()
-    );
-}
+    private VideojuegoDto convertirADto(
+            Videojuego videojuego
+    ) {
+
+        return new VideojuegoDto(
+                videojuego.getId(),
+                videojuego.getNombre(),
+                videojuego.getPrecio(),
+                videojuego.necesitaReposicion()
+        );
+    }
 }
